@@ -16,18 +16,20 @@ class Client(Thread):
         self.conn = conn
         self.addr = addr
         self.client = client
+        self.input_data = ''
 
     def run(self):
+        self.input_data = ''
         self.conn.send(MSG_WELCOME_CLIENTE)
         while True:
             try:
-                input_data = self.conn.recv(1024)
+                self.input_data = self.conn.recv(1024)
             except error:
                 print "[%s] Error de lectura." % self.name
                 break
             else:
-                if input_data:
-                    if input_data == EXIT_OPTION:
+                if self.input_data:
+                    if self.input_data == EXIT_OPTION:
                         self.conn.close()
                         print self.addr[0] + " se a desconectado."
                         self.client.remove(self)
@@ -35,7 +37,7 @@ class Client(Thread):
                         break
                     else:
                         for x in self.client:
-                            x.send_message(input_data)
+                            x.send_message(self.input_data)
         self.conn.close()
 
     def close(self):
@@ -44,7 +46,7 @@ class Client(Thread):
 
     def send_message(self, message):
         msg_temp = str(self.addr[0]) + "[" + str(self.addr[1]) + "]: "
-        msg_temp += input_data
+        msg_temp += message
         self.conn.send(
             msg_temp
         )
