@@ -94,18 +94,12 @@ class Client(Thread):
         msg_temp += minute
         msg_temp += bcolors.HEADER
         msg_temp += ' <'
-        msg_temp_1 += str(self.client[self.addr[1]]['nick']) + "> "
-        msg_temp_1 += bcolors.ENDC
-        message_1 = msg_temp_1 + message
-        for x in self.client:
-            if self.client[x]['nick'] == user:
-                self.client[x]['client'].send_message(message_1)
-        msg_temp += str(self.client[self.addr[1]]['nick'])
-        msg_temp += "--> "
-        msg_temp += user
-        msg_temp += " > "
+        msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
         msg_temp += bcolors.ENDC
         message = msg_temp + message
+        for x in self.client:
+            if self.client[x]['nick'] == user:
+                self.client[x]['client'].send_message(message)
         self.client[self.addr[1]]['client'].send_message(message)
 
     def process_message(self, input_data):
