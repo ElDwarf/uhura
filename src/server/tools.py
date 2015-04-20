@@ -67,13 +67,35 @@ class Client(Thread):
         return msg_temp
 
     def send_help(self):
-        help_msg = '-' * 30
-        help_msg += '\nHelp del Server UHURA\n'
+        self.send_message('-' * 30)
+        self.send_message('Help del Server UHURA')
         for x in self.HELP_SERVER:
-            help_msg += x + ':\n'
-            help_msg += '\t' + self.HELP_SERVER[x] + '\n'
-        help_msg += '-' * 30
-        self.send_message(help_msg)
+            self.send_message(x + ':')
+            self.send_message('\t' + self.HELP_SERVER[x])
+        self.send_message('-' * 30)
+
+    def say_to(self, user, message):
+        hours = datetime.now().hour
+        if hours < 10:
+            hours = '0' + str(hours)
+        else:
+            hours = str(hours)
+        minute = str(datetime.now().minute)
+        if minute < 10:
+            minute = '0' + str(minute)
+        else:
+            minute = str(minute)
+        msg_temp = hours
+        msg_temp += ':'
+        msg_temp += minute
+        msg_temp += bcolors.HEADER
+        msg_temp += ' <'
+        msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
+        msg_temp += bcolors.ENDC
+        message += msg_temp + message
+        for x in self.client:
+            if self.client[x]['nick'] == user:
+                self.client[x]['client'].send_message(message)
 
     def process_message(self, input_data):
         hours = datetime.now().hour
@@ -126,9 +148,7 @@ class Client(Thread):
             msg_temp = input_data[5:]
             user_temp = msg_temp[:msg_temp.index(' ')]
             msg_temp = msg_temp[msg_temp.index(' ')+1:]
-            for x in self.client:
-                if self.client[x]['nick'] == user_temp:
-                    self.client[x]['client'].send_message(msg_temp)
+            self.say_to(user_temp, msg_temp)
         elif input_data == '\help':
             self.send_help()
         else:
