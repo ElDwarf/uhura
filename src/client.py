@@ -4,8 +4,8 @@ from server.setting import *
 from socket import socket
 from client.tools import Recive, Envia
 
-#HOST = '201.235.199.203'
-HOST = 'localhost'
+HOST = '201.235.199.203'
+#HOST = 'localhost'
 PORT = 6031
 
 connected = []

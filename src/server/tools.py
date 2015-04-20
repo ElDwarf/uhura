@@ -92,7 +92,7 @@ class Client(Thread):
             )
             self.history.printer()
         elif input_data[:6] == '\\nick ':
-            self.set_nick(input_data[:6])
+            self.set_nick(input_data[6:])
             for x in self.client.keys():
                 self.client[x]['client'].send_message(msg_temp)
         elif input_data == '\help':
