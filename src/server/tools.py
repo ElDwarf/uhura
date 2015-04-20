@@ -9,8 +9,9 @@ class Client(Thread):
 
     HELP_SERVER = {
         '\quit': 'Desconecta del servidor',
+        '\user_list': 'Devuelve el listado de usuarios',
         '\\nick <nick_name>': 'Setea el <nick_name> del usuario',
-        '\user_list': 'Devuelve el listado de usuarios'
+        '\say <nick_name> <mensaje>': 'Envia mensaje privado'
     }
 
     def __init__(self, conn, addr, client, history):
@@ -47,23 +48,31 @@ class Client(Thread):
         )
 
     def set_nick(self, nick):
-        old_nick = self.client[self.addr[1]]['nick']
-        self.client[self.addr[1]]['nick'] = nick
-        msg_temp = bcolors.OKBLUE
-        msg_temp += old_nick + ' ahora es '
-        msg_temp += nick
-        msg_temp += bcolors.ENDC
-        self.history.append(
-            msg_temp
-        )
+        count_temp = 0
+        for x in self.client:
+            if nick == self.client[x]['nick']:
+                count_temp += 1
+        if count_temp == 0:
+            old_nick = self.client[self.addr[1]]['nick']
+            self.client[self.addr[1]]['nick'] = nick
+            msg_temp = bcolors.OKBLUE
+            msg_temp += old_nick + ' ahora es '
+            msg_temp += nick
+            msg_temp += bcolors.ENDC
+            self.history.append(
+                msg_temp
+            )
+        else:
+            msg_temp = 'ERROR: El nick ta esta en uso.'
+            self.client[self.addr[1]]['client'].send_message(msg_temp)
 
     def send_help(self):
-        help_msg = '-' * 15
+        help_msg = '-' * 30
         help_msg += '\nHelp del Server UHURA\n'
         for x in self.HELP_SERVER:
             help_msg += x + ':\n'
             help_msg += '\t' + self.HELP_SERVER[x] + '\n'
-        help_msg += '-' * 15
+        help_msg += '-' * 30
         self.send_message(help_msg)
 
     def process_message(self, input_data):
@@ -113,6 +122,13 @@ class Client(Thread):
                 user_list += self.client[x]['nick'] + ', '
             user_list += ']'
             self.client[self.addr[1]]['client'].send_message(user_list)
+        elif input_data[:5] == '\say ':
+            msg_temp = input_data[5:]
+            user_temp = msg_temp[:msg_temp.index(' ')]
+            msg_temp = msg_temp[msg_temp.index(' ')+1:]
+            for x in self.client:
+                if self.client[x]['nick'] == user_temp:
+                    self.client[x]['client'].send_message(msg_temp)
         elif input_data == '\help':
             self.send_help()
         else:

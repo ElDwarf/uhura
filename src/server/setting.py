@@ -7,7 +7,7 @@ HOST_SERVER = 'localhost'
 
 POST_SERVER = 6031
 
-SEPARADOR = "=" * 50
+SEPARADOR = "=" * POSTITION[1]
 
 CLEAR_SCREEN = "\n" * 50
 
