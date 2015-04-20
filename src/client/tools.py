@@ -25,7 +25,11 @@ class Recive(Thread):
                 break
             else:
                 if input_data:
-                    self.history.append(input_data)
+                    if '\n' in input_data:
+                        for x in input_data.split('\n'):
+                            self.history.append(x)
+                    else:
+                        self.history.append(input_data)
                     pos_temp = len(self.history) - getTerminalSize()[1]
                     history_tmp = self.history[pos_temp:]
                     for x in range(getTerminalSize()[1]):

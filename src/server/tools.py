@@ -67,12 +67,13 @@ class Client(Thread):
         return msg_temp
 
     def send_help(self):
-        self.send_message('-' * 30)
-        self.send_message('Help del Server UHURA')
+        tmp_msg = '-' * 30
+        tmp_msg += '\nHelp del Server UHURA\n'
         for x in self.HELP_SERVER:
-            self.send_message(x + ':')
-            self.send_message('\t' + self.HELP_SERVER[x])
-        self.send_message('-' * 30)
+            tmp_msg += x + ':\n'
+            tmp_msg += '\t' + self.HELP_SERVER[x] + '\n'
+        tmp_msg += '-' * 30
+        self.send_message(tmp_msg)
 
     def say_to(self, user, message):
         hours = datetime.now().hour
