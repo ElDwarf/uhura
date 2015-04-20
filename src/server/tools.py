@@ -58,10 +58,12 @@ class Client(Thread):
         )
 
     def send_help(self):
-        help_msg = 'Help del Server UHURA\n'
+        help_msg = '-' * 15
+        help_msg += '\nHelp del Server UHURA\n'
         for x in self.HELP_SERVER:
             help_msg += x + ':\n'
-            help_msg += '\t' + self.HELP_SERVER[x]
+            help_msg += '\t' + self.HELP_SERVER[x] + '\n'
+        help_msg += '-' * 15
         self.send_message(help_msg)
 
     def process_message(self, input_data):
@@ -105,7 +107,7 @@ class Client(Thread):
             self.set_nick(input_data[6:])
             for x in self.client.keys():
                 self.client[x]['client'].send_message(msg_temp)
-        elif input_data[:6] == '\user_list':
+        elif input_data == '\user_list':
             user_list = '['
             for x in self.client.keys():
                 user_list += self.client[x]['nick'] + ', '
