@@ -62,9 +62,12 @@ class Client(Thread):
             self.history.append(
                 msg_temp
             )
+            for x in self.client.keys():
+                self.client[x]['client'].send_message(msg_temp)
         else:
             msg_temp = 'ERROR: El nick ta esta en uso.'
-        return msg_temp
+            for x in self.client.keys():
+                self.client[self.addr[1]]['client'].send_message(msg_temp)
 
     def send_help(self):
         tmp_msg = '-' * 30
@@ -137,9 +140,7 @@ class Client(Thread):
             )
             self.history.printer()
         elif input_data[:6] == '\\nick ':
-            msg_temp = self.set_nick(input_data[6:])
-            for x in self.client.keys():
-                self.client[x]['client'].send_message(msg_temp)
+            self.set_nick(input_data[6:])
         elif input_data == '\user_list':
             user_list = '['
             for x in self.client.keys():
