@@ -92,7 +92,7 @@ class Client(Thread):
         msg_temp += ' <'
         msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
         msg_temp += bcolors.ENDC
-        message += msg_temp + message
+        message = msg_temp + message
         for x in self.client:
             if self.client[x]['nick'] == user:
                 self.client[x]['client'].send_message(message)
@@ -135,7 +135,7 @@ class Client(Thread):
             )
             self.history.printer()
         elif input_data[:6] == '\\nick ':
-            self.set_nick(input_data[6:])
+            msg_temp = self.set_nick(input_data[6:])
             for x in self.client.keys():
                 self.client[x]['client'].send_message(msg_temp)
         elif input_data == '\user_list':
