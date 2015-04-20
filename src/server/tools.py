@@ -96,6 +96,7 @@ class Client(Thread):
         for x in self.client:
             if self.client[x]['nick'] == user:
                 self.client[x]['client'].send_message(message)
+        self.client[self.addr[1]]['client'].send_message(message)
 
     def process_message(self, input_data):
         hours = datetime.now().hour
