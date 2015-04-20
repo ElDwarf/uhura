@@ -64,7 +64,7 @@ class Client(Thread):
             )
         else:
             msg_temp = 'ERROR: El nick ta esta en uso.'
-            self.client[self.addr[1]]['client'].send_message(msg_temp)
+        return msg_temp
 
     def send_help(self):
         help_msg = '-' * 30
