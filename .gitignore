@@ -1,0 +1,9 @@
+.pyc
+.DS_Store
+src/client/__init__.pyc
+src/client/core.pyc
+src/client/tools.pyc
+src/server/__init__.pyc
+src/server/core.pyc
+src/server/setting.pyc
+src/server/tools.pyc

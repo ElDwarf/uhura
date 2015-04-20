@@ -61,13 +61,23 @@ class Client(Thread):
         help_msg = 'Help del Server UHURA\n'
         for x in self.HELP_SERVER:
             help_msg += x + ':\n'
-            help_msg += '\t' + self.HELP_SERVER[x] + '\n'
+            help_msg += '\t' + self.HELP_SERVER[x]
         self.send_message(help_msg)
 
     def process_message(self, input_data):
-        msg_temp = str(datetime.now().hour)
+        hours = datetime.now().hour
+        if hours < 10:
+            hours = '0' + str(hours)
+        else:
+            hours = str(hours)
+        minute = str(datetime.now().minute)
+        if minute < 10:
+            minute = '0' + str(minute)
+        else:
+            minute = str(minute)
+        msg_temp = hours
         msg_temp += ':'
-        msg_temp += str(datetime.now().minute)
+        msg_temp += minute
         msg_temp += ' <'
         msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
         msg_temp += input_data
@@ -95,6 +105,12 @@ class Client(Thread):
             self.set_nick(input_data[6:])
             for x in self.client.keys():
                 self.client[x]['client'].send_message(msg_temp)
+        elif input_data[:6] == '\user_list':
+            user_list = '['
+            for x in self.client.keys():
+                user_list += self.client[x]['nick'] + ', '
+            user_list += ']'
+            self.client[self.addr[1]]['client'].send_message(user_list)
         elif input_data == '\help':
             self.send_help()
         else:
