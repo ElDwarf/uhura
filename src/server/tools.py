@@ -39,13 +39,33 @@ class Client(Thread):
         self.conn.close()
 
     def close(self):
-        """Método para cerrar el socket."""
+        msg_temp = bcolors.FAIL
+        msg_temp += self.client[self.addr[1]]['nick']
+        msg_temp += " se a desconectado."
+        msg_temp += bcolors.ENDC
+        for x in self.client.keys():
+            self.client[x]['client'].send_message(msg_temp)
         self.conn.close()
+        self.history.append(
+            msg_temp
+        )
+        del self.client[self.addr[1]]
+        msg_temp = bcolors.WARNING
+        msg_temp += "--%s " % str(len(self.client))
+        msg_temp += " cliente conectados"
+        msg_temp += bcolors.ENDC
+        self.history.append(
+            msg_temp
+        )
+        self.history.printer()
 
     def send_message(self, message):
-        self.conn.send(
-            message
-        )
+        try:
+            self.conn.send(
+                message
+            )
+        except:
+            self.close()
 
     def set_nick(self, nick):
         count_temp = 0
@@ -120,25 +140,7 @@ class Client(Thread):
         msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
         msg_temp += input_data
         if input_data == EXIT_OPTION:
-            for x in self.client.keys():
-                msg_temp = bcolors.FAIL
-                msg_temp += self.client[self.addr[1]]['nick']
-                msg_temp += " se a desconectado."
-                msg_temp += bcolors.ENDC
-                self.client[x]['client'].send_message(msg_temp)
-            self.conn.close()
-            self.history.append(
-                msg_temp
-            )
-            del self.client[self.addr[1]]
-            msg_temp = bcolors.WARNING
-            msg_temp += "--%s " % str(len(self.client))
-            msg_temp += " cliente conectados"
-            msg_temp += bcolors.ENDC
-            self.history.append(
-                msg_temp
-            )
-            self.history.printer()
+            self.close()
         elif input_data[:6] == '\\nick ':
             self.set_nick(input_data[6:])
         elif input_data == '\user_list':
