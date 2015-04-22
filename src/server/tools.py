@@ -44,7 +44,8 @@ class Client(Thread):
         msg_temp += " se a desconectado."
         msg_temp += bcolors.ENDC
         for x in self.client.keys():
-            self.client[x]['client'].send_message(msg_temp)
+            if x != self.addr[1]:
+                self.client[x]['client'].send_message(msg_temp)
         self.conn.close()
         self.history.append(
             msg_temp
