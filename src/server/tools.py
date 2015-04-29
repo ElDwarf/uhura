@@ -137,26 +137,31 @@ class Client(Thread):
         )
 
     def process_message(self, input_data):
-        input_data = json.loads(input_data)
-        if input_data['type'] == 'MSG-P':
-            msg_temp = input_data['msg']
-            user_temp = input_data['to']
-            self.say_to(user_temp, msg_temp)
-        elif input_data['type'] == 'MSG':
-            for x in self.client.keys():
-                self.client[x]['client'].send_message(
-                    msg_temp, str(self.client[self.addr[1]]['nick'])
-                )
-        elif input_data['type'] == 'CMD':
-            if input_data['cmd'] == EXIT_OPTION:
-                self.close()
-            elif input_data['cmd'] == '\\nick':
-                self.set_nick(input_data['parameter'][0])
-            elif input_data['cmd'] == 'user_list':
-                user_list = '['
+        try:
+            input_data = json.loads(input_data)
+            if input_data['type'] == 'MSG-P':
+                msg_temp = input_data['msg']
+                user_temp = input_data['to']
+                self.say_to(user_temp, msg_temp)
+            elif input_data['type'] == 'MSG':
                 for x in self.client.keys():
-                    user_list += self.client[x]['nick'] + ', '
-                user_list += ']'
-                self.client[self.addr[1]]['client'].send_message(user_list)
-            elif input_data['cmd'] == '\help':
-                self.send_help()
+                    self.client[x]['client'].send_message(
+                        msg_temp, str(self.client[self.addr[1]]['nick'])
+                    )
+            elif input_data['type'] == 'CMD':
+                if input_data['cmd'] == EXIT_OPTION:
+                    self.close()
+                elif input_data['cmd'] == '\\nick':
+                    self.set_nick(input_data['parameter'][0])
+                elif input_data['cmd'] == 'user_list':
+                    user_list = '['
+                    for x in self.client.keys():
+                        user_list += self.client[x]['nick'] + ', '
+                    user_list += ']'
+                    self.client[self.addr[1]]['client'].send_message(user_list)
+                elif input_data['cmd'] == '\help':
+                    self.send_help()
+        except:
+            self.conn.send(
+                "Error de protocolo."
+            )

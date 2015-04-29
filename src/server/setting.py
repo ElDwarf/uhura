@@ -3,7 +3,7 @@ from server.core import getTerminalSize
 
 POSTITION = getTerminalSize()
 
-HOST_SERVER = 'localhost'
+HOST_SERVER = '173.255.196.97'
 
 POST_SERVER = 6031
 
