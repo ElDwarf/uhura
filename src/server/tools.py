@@ -3,6 +3,7 @@ from socket import error
 from threading import Thread
 from server.setting import *
 from datetime import datetime
+import json
 
 
 class Client(Thread):
@@ -39,16 +40,14 @@ class Client(Thread):
         self.conn.close()
 
     def close(self):
-        msg_temp = bcolors.FAIL
-        msg_temp += self.client[self.addr[1]]['nick']
+        msg_temp = self.client[self.addr[1]]['nick']
         msg_temp += " se a desconectado."
-        msg_temp += bcolors.ENDC
         for x in self.client.keys():
             if x != self.addr[1]:
                 self.client[x]['client'].send_message(msg_temp)
         self.conn.close()
         self.history.append(
-            msg_temp
+            bcolors.FAIL + msg_temp + bcolors.ENDC
         )
         del self.client[self.addr[1]]
         msg_temp = bcolors.WARNING
@@ -60,7 +59,33 @@ class Client(Thread):
         )
         self.history.printer()
 
-    def send_message(self, message):
+    def send_message(self, message, from_user=None, private=False):
+        hours = datetime.now().hour
+        if hours < 10:
+            hours = '0' + str(hours)
+        else:
+            hours = str(hours)
+        minute = str(datetime.now().minute)
+        if minute < 10:
+            minute = '0' + str(minute)
+        else:
+            minute = str(minute)
+        if from_user is not None:
+            s = {
+                'type': 'MSG',
+                'from': from_user,
+                'time': hours + ':' + minute,
+                'msg': message,
+            }
+        else:
+            s = {
+                'type': 'MSG',
+                'time': hours + ':' + minute,
+                'msg': message,
+            }
+        if private:
+            s['type'] = 'MSG-P'
+        message = json.dumps(s)
         try:
             self.conn.send(
                 message
@@ -76,12 +101,10 @@ class Client(Thread):
         if count_temp == 0:
             old_nick = self.client[self.addr[1]]['nick']
             self.client[self.addr[1]]['nick'] = nick
-            msg_temp = bcolors.OKBLUE
-            msg_temp += old_nick + ' ahora es '
+            msg_temp = old_nick + ' ahora es '
             msg_temp += nick
-            msg_temp += bcolors.ENDC
             self.history.append(
-                msg_temp
+                bcolors.OKBLUE + msg_temp + bcolors.ENDC
             )
             for x in self.client.keys():
                 self.client[x]['client'].send_message(msg_temp)
@@ -100,65 +123,40 @@ class Client(Thread):
         self.send_message(tmp_msg)
 
     def say_to(self, user, message):
-        hours = datetime.now().hour
-        if hours < 10:
-            hours = '0' + str(hours)
-        else:
-            hours = str(hours)
-        minute = str(datetime.now().minute)
-        if minute < 10:
-            minute = '0' + str(minute)
-        else:
-            minute = str(minute)
-        msg_temp = hours
-        msg_temp += ':'
-        msg_temp += minute
-        msg_temp += bcolors.HEADER
-        msg_temp += ' <'
-        msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
-        msg_temp += bcolors.ENDC
-        message = msg_temp + message
         for x in self.client:
             if self.client[x]['nick'] == user:
-                self.client[x]['client'].send_message(message)
-        self.client[self.addr[1]]['client'].send_message(message)
+                self.client[x]['client'].send_message(
+                    message,
+                    str(self.client[self.addr[1]]['nick']),
+                    private=True
+                )
+        self.client[self.addr[1]]['client'].send_message(
+            message,
+            str(self.client[self.addr[1]]['nick']),
+            private=True
+        )
 
     def process_message(self, input_data):
-        hours = datetime.now().hour
-        if hours < 10:
-            hours = '0' + str(hours)
-        else:
-            hours = str(hours)
-        minute = str(datetime.now().minute)
-        if minute < 10:
-            minute = '0' + str(minute)
-        else:
-            minute = str(minute)
-        msg_temp = hours
-        msg_temp += ':'
-        msg_temp += minute
-        msg_temp += ' <'
-        msg_temp += str(self.client[self.addr[1]]['nick']) + "> "
-        msg_temp += input_data
-        if input_data == EXIT_OPTION:
-            self.close()
-        elif input_data[:6] == '\\nick ':
-            self.set_nick(input_data[6:])
-        elif input_data == '\user_list':
-            user_list = '['
-            for x in self.client.keys():
-                user_list += self.client[x]['nick'] + ', '
-            user_list += ']'
-            self.client[self.addr[1]]['client'].send_message(user_list)
-        elif input_data[:5] == '\say ':
-            msg_temp = input_data[5:]
-            user_temp = msg_temp[:msg_temp.index(' ')]
-            msg_temp = msg_temp[msg_temp.index(' ')+1:]
+        input_data = json.loads(input_data)
+        if input_data['type'] == 'MSG-P':
+            msg_temp = input_data['msg']
+            user_temp = input_data['to']
             self.say_to(user_temp, msg_temp)
-        elif input_data == '\help':
-            self.send_help()
-        else:
-            self.history.append(msg_temp)
-            self.history.printer()
+        elif input_data['type'] == 'MSG':
             for x in self.client.keys():
-                self.client[x]['client'].send_message(msg_temp)
+                self.client[x]['client'].send_message(
+                    msg_temp, str(self.client[self.addr[1]]['nick'])
+                )
+        elif input_data['type'] == 'CMD':
+            if input_data['cmd'] == EXIT_OPTION:
+                self.close()
+            elif input_data['cmd'] == '\\nick':
+                self.set_nick(input_data['parameter'][0])
+            elif input_data['cmd'] == 'user_list':
+                user_list = '['
+                for x in self.client.keys():
+                    user_list += self.client[x]['nick'] + ', '
+                user_list += ']'
+                self.client[self.addr[1]]['client'].send_message(user_list)
+            elif input_data['cmd'] == '\help':
+                self.send_help()
